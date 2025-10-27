@@ -391,15 +391,15 @@
                 ],
                 "Fridykning" => [
                     [
-                        'role' => 'Instruktör',
-                        'name' => '',
-                        'phone' => '',
+                        'role' => 'Instruktör Samordnare',
+                        'name' => 'Clara Pettersson',
+                        'phone' => '076-847 06 70',
                         'email' => ''
                     ],
                     [
                         'role' => 'Instruktör',
-                        'name' => 'd',
-                        'phone' => '',
+                        'name' => 'Vera Petterson',
+                        'phone' => '073-505 25 42',
                         'email' => ''
                     ],
                     [
