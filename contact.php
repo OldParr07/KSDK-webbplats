@@ -398,7 +398,7 @@
                     ],
                     [
                         'role' => 'Instruktör',
-                        'name' => '',
+                        'name' => 'd',
                         'phone' => '',
                         'email' => ''
                     ],
