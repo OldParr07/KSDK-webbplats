@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -12,26 +15,7 @@
     </head>
 
     <body>
-        <!-- Navbar Section -->
-        <nav class="navbar">
-            <div class="navbar__container">
-                <a href="index.php" class="navbar__logo">
-                    <img src="images/KSDK-banner.jpg" alt="KSDK Logo" class="navbar__logo-image" href="index.php">
-                </a>
-                <div class="navbar__toggle" id="mobile-menu">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-                <div class="navbar__menu">
-                    <a href="index.php" class="navbar__link active">Hem</a>
-                    <a href="about.php" class="navbar__link">Om oss</a>
-                    <a href="calendar.php" class="navbar__link">Aktiviteter</a>
-                    <a href="contact.php" class="navbar__link">Kontakt</a>
-                    <a href="#" class="btn btn--primary">Bli medlem</a>
-                </div>
-            </div>
-        </nav>
+        <?php include 'includes/navbar.php'; ?>
         <!-- Hero Section -->
         <header class="hero">
             <div class="hero__content">
@@ -126,7 +110,7 @@
                 <div class="sidebar__widget payment-info">
                     <h3>Swish-betalning</h3>
                     <div class="swish-details">
-                        <img src="swish-logo.png" alt="Swish" class="swish-logo">
+                        <img src="swish.png" alt="Swish" class="swish-logo">
                         <p>KSDK's nummer är:</p>
                         <div class="swish-number">123185135</div>
                     </div>
@@ -158,11 +142,7 @@
             </aside>
         </div>
 
-        <footer class="site-footer">
-            <div class="container">
-                <p>&copy; <?= date('Y') ?> Karlskoga Sportdykarklubb</p>
-            </div>
-        </footer>
+        <?php include 'includes/footer.php'; ?>
 
         <script>
             // Toggle mobile menu

@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>KSDK</title>
+        <title>KSDK - Tjänster</title>
         <link rel="stylesheet" href="style.css">
         <script src="https://kit.fontawesome.com/10235da58b.js" crossorigin="anonymous"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,21 +12,26 @@
     </head>
 
     <body>
-        <!-- Navbar Section -->
-        <nav class="navbar">
-            <a href="index.php" class ="navbar__logo">KSDK</a>
-            <div class="navbar__toggle" id="mobile-menu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-            <div class="navbar__menu">
-                <a href="index.php" class="navbar__link">Home</a>
-                <a href="about.php" class="navbar__link">About</a>
-                <a href="services.php" class="navbar__link">Services</a>
-                <a href="contact.php" class="navbar__link">Contact</a>
-            </div>
-        </nav>
+        <?php include 'includes/navbar.php'; ?>
 
-        
+        <main class="container">
+            <header class="page-header">
+                <h1>Våra tjänster</h1>
+                <p class="lead">Upptäck vad vi kan erbjuda dig</p>
+            </header>
+            </main>
+
+        <?php include 'includes/footer.php'; ?>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menu = document.querySelector("#mobile-menu");
+            const menuLinks = document.querySelector(".navbar__menu");
+            menu?.addEventListener("click", function() {
+                menu.classList.toggle("is-active");
+                menuLinks.classList.toggle("active");
+            });
+        });
+        </script>
     </body>
+</html>

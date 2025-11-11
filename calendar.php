@@ -1,4 +1,8 @@
 <?php
+// Inkludera config och auth-filer
+require_once 'includes/config.php';
+require_once 'includes/auth.php';
+
 $current_month = isset($_GET['month']) ? (int)$_GET['month'] : (int)date('m');
 $current_year = isset($_GET['year']) ? (int)$_GET['year'] : (int)date('Y');
 
@@ -6,24 +10,21 @@ $first_day = mktime(0, 0, 0, $current_month, 1, $current_year);
 $days_in_month = date('t', $first_day);
 $first_day_of_week = date('N', $first_day);
 
-// Sample activities (kan ersättas med databaskoppling senare)
-$activities = [
-    '2025-10-29' => [
-        ['time' => '20:00-21:00', 'title' => 'Strandbadsdyk', 'type' => 'training'],
-    ],
-    '2025-10-31' => [
-        ['time' => '18:00-19:30', 'title' => 'Strandbadsdyk', 'type' => 'training'],
-    ],
-    '2025-11-01' => [
-        ['time' => '16:00', 'title' => 'Strandbadsdyk', 'type' => 'training', 'note' => 'lördag alla'],
-    ],
-    '2025-11-05' => [
-        ['time' => '20:00-21:00', 'title' => 'Strandbadsdyk', 'type' => 'training'],
-    ],
-    '2025-11-07' => [
-        ['time' => '18:00-19:30', 'title' => 'Strandbadsdyk', 'type' => 'training'],
-    ],
-];
+// Hämta aktiviteter från databasen
+$activities = [];
+try {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT * FROM activities WHERE MONTH(date) = ? AND YEAR(date) = ?");
+    $stmt->execute([$current_month, $current_year]);
+    $db_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($db_activities as $activity) {
+        $activities[$activity['date']][] = $activity;
+    }
+} catch (PDOException $e) {
+    // Felhantering
+    error_log("Could not fetch activities: " . $e->getMessage());
+}
 
 $months = [
     1 => 'Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni',
@@ -45,33 +46,20 @@ if ($next_month > 12) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="sv">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aktivitetskalender - KSDK</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://kit.fontawesome.com/10235da58b.js" crossorigin="anonymous"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- Navbar Section -->
-    <nav class="navbar">
-        <a href="index.php" class="navbar__logo">KSDK</a>
-        <div class="navbar__toggle" id="mobile-menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </div>
-        <div class="navbar__menu">
-            <a href="index.php" class="navbar__link">Hem</a>
-            <a href="about.php" class="navbar__link">Om oss</a>
-            <a href="services.php" class="navbar__link">Aktiviteter</a>
-            <a href="contact.php" class="navbar__link">Kontakt</a>
-        </div>
-    </nav>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>KSDK - Aktivitetskalender</title>
+        <link rel="stylesheet" href="style.css">
+        <script src="https://kit.fontawesome.com/10235da58b.js" crossorigin="anonymous"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    </head>
+
+    <body>
+        <?php include 'includes/navbar.php'; ?>
 
     <main class="calendar-page">
         <div class="container">
@@ -86,6 +74,9 @@ if ($next_month > 12) {
                         Nästa månad <i class="fas fa-chevron-right"></i>
                     </a>
                 </div>
+                <?php if (isLoggedIn()): ?>
+                    <a href="add_activity.php" class="btn btn--primary">Lägg till aktivitet</a>
+                <?php endif; ?>
             </header>
 
             <div class="calendar">
@@ -111,22 +102,30 @@ if ($next_month > 12) {
                         $has_activity = isset($activities[$date]);
                         $today = $date === date('Y-m-d');
                         
-                        echo '<div class="calendar__day' . ($today ? ' calendar__day--today' : '') . '">';
+                        echo '<a href="add_activity.php?date=' . $date . '" class="calendar__day' . ($today ? ' calendar__day--today' : '') . '">';
                         echo '<span class="day-number">' . $day . '</span>';
                         
                         if ($has_activity) {
                             foreach ($activities[$date] as $activity) {
                                 echo '<div class="calendar__event">';
-                                echo '<span class="event__time">' . $activity['time'] . '</span>';
-                                echo '<span class="event__title">' . $activity['title'] . '</span>';
-                                if (isset($activity['note'])) {
-                                    echo '<span class="event__note">' . $activity['note'] . '</span>';
+                                echo '<span class="event__time">' . htmlspecialchars($activity['time']) . '</span>';
+                                echo '<span class="event__title">' . htmlspecialchars($activity['title']) . '</span>';
+                                if (!empty($activity['note'])) {
+                                    echo '<span class="event__note">' . htmlspecialchars($activity['note']) . '</span>';
+                                }
+
+                                // TODO: Add role-based access control
+                                if (isLoggedIn()) {
+                                    echo '<div class="event__actions">';
+                                    echo '<a href="edit_activity.php?id=' . $activity['id'] . '" class="btn btn--small" onclick="event.stopPropagation();">Redigera</a>';
+                                    echo '<a href="delete_activity.php?id=' . $activity['id'] . '" class="btn btn--small btn--danger" onclick="event.stopPropagation(); return confirm(\'Are you sure you want to delete this activity?\');">Ta bort</a>';
+                                    echo '</div>';
                                 }
                                 echo '</div>';
                             }
                         }
                         
-                        echo '</div>';
+                        echo '</a>';
                     }
 
                     // Padding för sista veckan
@@ -158,19 +157,17 @@ if ($next_month > 12) {
         </div>
     </main>
 
-    <footer class="site-footer">
-        <div class="container">&copy; <?= date('Y') ?> Karlskoga Sportdykarklubb</div>
-    </footer>
+    <?php include 'includes/footer.php'; ?>
 
     <script>
-        // Toggle mobile menu
-        const menu = document.querySelector('#mobile-menu');
-        const menuLinks = document.querySelector('.navbar__menu');
-        
-        menu.addEventListener('click', function() {
-            menu.classList.toggle('is-active');
-            menuLinks.classList.toggle('active');
+    document.addEventListener('DOMContentLoaded', function() {
+        const menu = document.querySelector("#mobile-menu");
+        const menuLinks = document.querySelector(".navbar__menu");
+        menu?.addEventListener("click", function() {
+            menu.classList.toggle("is-active");
+            menuLinks.classList.toggle("active");
         });
+    });
     </script>
 </body>
 </html>
